@@ -16,16 +16,19 @@ pub struct PutRequest {
     pub value: ::prost::alloc::vec::Vec<u8>,
 }
 #[derive(serde::Deserialize, serde::Serialize, Clone, PartialEq, ::prost::Message)]
-pub struct Empty {}
+pub struct PutResponse {
+    #[prost(bytes = "vec", tag = "1")]
+    pub value: ::prost::alloc::vec::Vec<u8>,
+}
 #[doc = r" Generated client implementations."]
-pub mod kv_client {
+pub mod kv_service_client {
     #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
     use tonic::codegen::*;
     #[derive(Debug, Clone)]
-    pub struct KvClient<T> {
+    pub struct KvServiceClient<T> {
         inner: tonic::client::Grpc<T>,
     }
-    impl KvClient<tonic::transport::Channel> {
+    impl KvServiceClient<tonic::transport::Channel> {
         #[doc = r" Attempt to create a new client by connecting to a given endpoint."]
         pub async fn connect<D>(dst: D) -> Result<Self, tonic::transport::Error>
         where
@@ -36,7 +39,7 @@ pub mod kv_client {
             Ok(Self::new(conn))
         }
     }
-    impl<T> KvClient<T>
+    impl<T> KvServiceClient<T>
     where
         T: tonic::client::GrpcService<tonic::body::BoxBody>,
         T::ResponseBody: Body + Send + Sync + 'static,
@@ -47,7 +50,10 @@ pub mod kv_client {
             let inner = tonic::client::Grpc::new(inner);
             Self { inner }
         }
-        pub fn with_interceptor<F>(inner: T, interceptor: F) -> KvClient<InterceptedService<T, F>>
+        pub fn with_interceptor<F>(
+            inner: T,
+            interceptor: F,
+        ) -> KvServiceClient<InterceptedService<T, F>>
         where
             F: tonic::service::Interceptor,
             T: tonic::codegen::Service<
@@ -59,7 +65,7 @@ pub mod kv_client {
             <T as tonic::codegen::Service<http::Request<tonic::body::BoxBody>>>::Error:
                 Into<StdError> + Send + Sync,
         {
-            KvClient::new(InterceptedService::new(inner, interceptor))
+            KvServiceClient::new(InterceptedService::new(inner, interceptor))
         }
         #[doc = r" Compress requests with `gzip`."]
         #[doc = r""]
@@ -85,13 +91,13 @@ pub mod kv_client {
                 )
             })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static("/proto.KV/Get");
+            let path = http::uri::PathAndQuery::from_static("/proto.v1.KvService/Get");
             self.inner.unary(request.into_request(), path, codec).await
         }
         pub async fn put(
             &mut self,
             request: impl tonic::IntoRequest<super::PutRequest>,
-        ) -> Result<tonic::Response<super::Empty>, tonic::Status> {
+        ) -> Result<tonic::Response<super::PutResponse>, tonic::Status> {
             self.inner.ready().await.map_err(|e| {
                 tonic::Status::new(
                     tonic::Code::Unknown,
@@ -99,18 +105,18 @@ pub mod kv_client {
                 )
             })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static("/proto.KV/Put");
+            let path = http::uri::PathAndQuery::from_static("/proto.v1.KvService/Put");
             self.inner.unary(request.into_request(), path, codec).await
         }
     }
 }
 #[doc = r" Generated server implementations."]
-pub mod kv_server {
+pub mod kv_service_server {
     #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
     use tonic::codegen::*;
-    #[doc = "Generated trait containing gRPC methods that should be implemented for use with KvServer."]
+    #[doc = "Generated trait containing gRPC methods that should be implemented for use with KvServiceServer."]
     #[async_trait]
-    pub trait Kv: Send + Sync + 'static {
+    pub trait KvService: Send + Sync + 'static {
         async fn get(
             &self,
             request: tonic::Request<super::GetRequest>,
@@ -118,16 +124,16 @@ pub mod kv_server {
         async fn put(
             &self,
             request: tonic::Request<super::PutRequest>,
-        ) -> Result<tonic::Response<super::Empty>, tonic::Status>;
+        ) -> Result<tonic::Response<super::PutResponse>, tonic::Status>;
     }
     #[derive(Debug)]
-    pub struct KvServer<T: Kv> {
+    pub struct KvServiceServer<T: KvService> {
         inner: _Inner<T>,
         accept_compression_encodings: (),
         send_compression_encodings: (),
     }
     struct _Inner<T>(Arc<T>);
-    impl<T: Kv> KvServer<T> {
+    impl<T: KvService> KvServiceServer<T> {
         pub fn new(inner: T) -> Self {
             let inner = Arc::new(inner);
             let inner = _Inner(inner);
@@ -144,9 +150,9 @@ pub mod kv_server {
             InterceptedService::new(Self::new(inner), interceptor)
         }
     }
-    impl<T, B> tonic::codegen::Service<http::Request<B>> for KvServer<T>
+    impl<T, B> tonic::codegen::Service<http::Request<B>> for KvServiceServer<T>
     where
-        T: Kv,
+        T: KvService,
         B: Body + Send + Sync + 'static,
         B::Error: Into<StdError> + Send + 'static,
     {
@@ -159,10 +165,10 @@ pub mod kv_server {
         fn call(&mut self, req: http::Request<B>) -> Self::Future {
             let inner = self.inner.clone();
             match req.uri().path() {
-                "/proto.KV/Get" => {
+                "/proto.v1.KvService/Get" => {
                     #[allow(non_camel_case_types)]
-                    struct GetSvc<T: Kv>(pub Arc<T>);
-                    impl<T: Kv> tonic::server::UnaryService<super::GetRequest> for GetSvc<T> {
+                    struct GetSvc<T: KvService>(pub Arc<T>);
+                    impl<T: KvService> tonic::server::UnaryService<super::GetRequest> for GetSvc<T> {
                         type Response = super::GetResponse;
                         type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
@@ -190,11 +196,11 @@ pub mod kv_server {
                     };
                     Box::pin(fut)
                 }
-                "/proto.KV/Put" => {
+                "/proto.v1.KvService/Put" => {
                     #[allow(non_camel_case_types)]
-                    struct PutSvc<T: Kv>(pub Arc<T>);
-                    impl<T: Kv> tonic::server::UnaryService<super::PutRequest> for PutSvc<T> {
-                        type Response = super::Empty;
+                    struct PutSvc<T: KvService>(pub Arc<T>);
+                    impl<T: KvService> tonic::server::UnaryService<super::PutRequest> for PutSvc<T> {
+                        type Response = super::PutResponse;
                         type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
@@ -232,7 +238,7 @@ pub mod kv_server {
             }
         }
     }
-    impl<T: Kv> Clone for KvServer<T> {
+    impl<T: KvService> Clone for KvServiceServer<T> {
         fn clone(&self) -> Self {
             let inner = self.inner.clone();
             Self {
@@ -242,7 +248,7 @@ pub mod kv_server {
             }
         }
     }
-    impl<T: Kv> Clone for _Inner<T> {
+    impl<T: KvService> Clone for _Inner<T> {
         fn clone(&self) -> Self {
             Self(self.0.clone())
         }
@@ -252,7 +258,7 @@ pub mod kv_server {
             write!(f, "{:?}", self.0)
         }
     }
-    impl<T: Kv> tonic::transport::NamedService for KvServer<T> {
-        const NAME: &'static str = "proto.KV";
+    impl<T: KvService> tonic::transport::NamedService for KvServiceServer<T> {
+        const NAME: &'static str = "proto.v1.KvService";
     }
 }

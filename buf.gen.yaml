@@ -1,0 +1,45 @@
+version: v1
+managed:
+  enabled: true
+  go_package_prefix:
+    default: github.com/tsingson/grpcplugin
+plugins:
+  - plugin: connect-go
+    out: ./
+    opt: paths=source_relative
+  - plugin: go
+    out: ./
+    opt: paths=source_relative
+
+  - plugin: buf.build/bufbuild/connect-es
+    out: ./front/src/
+    opt: target=ts
+  - plugin: buf.build/bufbuild/es
+    out: ./front/src/
+    opt: target=ts
+
+#  - plugin: buf.build/protocolbuffers/cpp
+#    out: ./cpp/include
+#  - plugin: buf.build/grpc/cpp
+#    out: ./cpp/include
+
+  - plugin: prost
+    out: src/gen
+    opt:
+      #      - bytes=.
+      - compile_well_known_types
+      - extern_path=.google.protobuf=::pbjson_types
+      - file_descriptor_set
+  - plugin: prost-serde
+    out: src/gen
+  - plugin: tonic
+    out: src/gen
+    opt:
+      - compile_well_known_types
+      - extern_path=.google.protobuf=::pbjson_types
+  - plugin: prost-crate
+    out: .
+    strategy: all
+    opt:
+      - include_file=src/gen/mod.rs
+      - gen_crate

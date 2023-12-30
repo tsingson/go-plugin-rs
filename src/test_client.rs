@@ -1,12 +1,9 @@
 use std::any::type_name;
 
 use env_logger;
+use grpc::proto::v1::kv_service_client::KvServiceClient;
+use grpc::proto::v1::{GetRequest, PutRequest};
 use log;
-
-use crate::proto::proto::kv_client::KvClient;
-use crate::proto::proto::{GetRequest, PutRequest};
-
-mod proto;
 
 fn type_of<T>(_: T) -> &'static str {
     type_name::<T>()
@@ -22,7 +19,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("channel established");
 
-    let mut client = KvClient::new(channel);
+    let mut client = KvServiceClient::new(channel);
 
     let put_request = tonic::Request::new(PutRequest {
         key: "foo".to_string(),

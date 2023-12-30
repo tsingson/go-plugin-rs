@@ -1,17 +1,18 @@
 use std::collections::HashMap;
+use std::io::Empty;
 use std::sync::{Arc, Mutex};
 use tonic::transport::Server;
 use tonic::{Request, Response, Status};
 use tonic_health::server::HealthReporter;
 
-use crate::proto::proto::kv_server::{Kv, KvServer};
-use crate::proto::proto::{Empty, GetRequest, GetResponse, PutRequest};
-
-mod proto;
+use grpc::proto::v1::kv_service_server::{KvService, KvServiceServer};
+use grpc::proto::v1::{GetRequest, GetResponse, PutRequest, PutResponse};
 
 // Implement a HealthReporter handler for tonic.
 async fn driver_service_status(mut reporter: HealthReporter) {
-    reporter.set_serving::<KvServer<PluginServer>>().await;
+    reporter
+        .set_serving::<KvServiceServer<PluginServer>>()
+        .await;
 }
 
 #[tokio::main]
@@ -22,7 +23,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let (mut health_reporter, health_service) = tonic_health::server::health_reporter();
     health_reporter
-        .set_serving::<KvServer<PluginServer>>()
+        .set_serving::<KvServiceServer<PluginServer>>()
         .await;
 
     tokio::spawn(driver_service_status(health_reporter.clone()));
@@ -32,7 +33,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Server::builder()
         .add_service(health_service)
-        .add_service(KvServer::new(plugin_server))
+        .add_service(KvServiceServer::new(plugin_server))
         .serve(addr)
         .await?;
 
@@ -59,7 +60,7 @@ impl PluginServer {
 }
 
 #[tonic::async_trait]
-impl Kv for PluginServer {
+impl KvService for PluginServer {
     async fn get(&self, request: Request<GetRequest>) -> Result<Response<GetResponse>, Status> {
         let key = request.get_ref().clone().key;
         if key.is_empty() {
@@ -77,7 +78,7 @@ impl Kv for PluginServer {
         }
     }
 
-    async fn put(&self, request: Request<PutRequest>) -> Result<Response<Empty>, Status> {
+    async fn put(&self, request: Request<PutRequest>) -> Result<Response<PutResponse>, Status> {
         let request_ref = request.get_ref().clone();
         if request_ref.key.is_empty() {
             return Err(Status::invalid_argument("key not specified"));
@@ -88,6 +89,8 @@ impl Kv for PluginServer {
 
         store.insert(request_ref.key, request_ref.value);
 
-        Ok(Response::new(Empty {}))
+        Ok(Response::new(PutResponse {
+            value: vec!['1' as u8],
+        }))
     }
 }
