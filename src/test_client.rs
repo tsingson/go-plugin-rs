@@ -20,7 +20,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .connect()
         .await?;
 
-    log::info!("channel established");
+    println!("channel established");
 
     let mut client = KvClient::new(channel);
 
@@ -33,7 +33,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // log that we got something back.
     let empty = type_of(put_response);
-    log::info!("put response: {}", empty);
+    println!("put response: {}", empty);
 
     let get_request = tonic::Request::new(GetRequest {
         key: "foo".to_string(),
@@ -43,7 +43,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // log that we got something back.
     let val = String::from_utf8(get_response.value).unwrap();
-    log::info!("get response: {}", val);
+    println!("get response: {}", val);
 
     Ok(())
 }
